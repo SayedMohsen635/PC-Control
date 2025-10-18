@@ -1,11 +1,11 @@
 #include "../inc/Server.hpp"
-#include <cstdio>
 
 // set port number
 Server::Server(int port) : port(port), serverSocket(-1) {}
 
 // initialize socket and bind
-bool Server::setupSocket() {
+bool Server::setupSocket()
+{
   serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
   // server address
@@ -21,13 +21,15 @@ bool Server::setupSocket() {
   // binding socket
   int bindResult =
       bind(serverSocket, (sockaddr *)&serverAddress, sizeof(serverAddress));
-  if (bindResult < 0) {
+  if (bindResult < 0)
+  {
     perror("Bind failed");
     return false;
   }
 
   // listen to the clients
-  if (listen(serverSocket, 5) < 0) {
+  if (listen(serverSocket, 5) < 0)
+  {
     perror("Listen Failed");
     return false;
   }
@@ -36,7 +38,8 @@ bool Server::setupSocket() {
 }
 
 // wait for a client and process a single request
-std::string Server::handleClient(int clientSocket) {
+std::string Server::handleClient(int clientSocket)
+{
   // receiving data from client
   char buffer[1024] = {0};
   recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -44,16 +47,38 @@ std::string Server::handleClient(int clientSocket) {
 }
 
 // used in handleClient function to process the raw data from the client
-std::string Server::processRequest(const std::string &request) {
-  std::cout << "The client's message is : " << request << std::endl;
-  return "OK|Request Received";
+std::string Server::processRequest(const std::string &request)
+{
+  std::string req = request;
+  req.erase(std::remove(request.begin(), request.end(), '\n'), request.end()); // Trimming new lines in the end of request
+
+  Command result = CommandParser::parse(req);
+  if (!result.isValid())
+  {
+    return "ERROR|Invalid Format";
+  }
+
+  if (result.getCommand() == "LAUNCH")
+  {
+    return "OK|Launching " + result.getApp();
+  }
+  else if (result.getCommand() == "EXIT")
+  {
+    return "OK|Good Bye";
+  }
+  else
+  {
+    return "ERROR|Unknown Command";
+  }
 }
 
 // listen and handle client requests
-void Server::start() {
+void Server::start()
+{
   std::cout << "[Server] Starting on port " << port << "...\n";
 
-  if (!setupSocket()) {
+  if (!setupSocket())
+  {
     std::cerr << "[Server] Failed to set up socket" << std::endl;
     return;
   }
@@ -62,7 +87,8 @@ void Server::start() {
 
   // accept the requet
   int clientSocket = accept(serverSocket, nullptr, nullptr);
-  if (clientSocket < 0) {
+  if (clientSocket < 0)
+  {
     perror("Accept Failed");
     return;
   }
