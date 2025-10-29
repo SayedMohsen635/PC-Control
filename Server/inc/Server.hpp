@@ -1,17 +1,16 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <cstring>
+#include "../../Command/inc/CommandParser.hpp"
 #include <algorithm>
+#include <cstring>
 #include <iostream>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "../../Command/inc/CommandParser.hpp"
 
-class Server
-{
+class Server {
 public:
   // set port number
   explicit Server(int port);

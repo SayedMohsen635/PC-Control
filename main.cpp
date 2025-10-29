@@ -1,3 +1,7 @@
 #include "Server/inc/Server.hpp"
 
-int main() { return 0; }
+int main() {
+  Server server(8080);
+  server.start();
+  return 0;
+}

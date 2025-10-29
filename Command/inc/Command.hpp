@@ -3,19 +3,19 @@
 
 #include <string>
 
-class Command
-{
+class Command {
 private:
-    std::string comName;
-    std::string application;
+  std::string comName;
+  std::string application;
 
 public:
-    Command(const std::string &com = "", const std::string &app = "") : comName(com), application(app) {};
+  Command(const std::string &com = "", const std::string &app = "")
+      : comName(com), application(app){};
 
-    std::string getCommand() const { return comName; }
-    std::string getApp() const { return application; }
+  std::string getCommand() const { return comName; }
+  std::string getApp() const { return application; }
 
-    bool isValid() const { return !comName.empty(); }
+  bool isValid() const { return !comName.empty(); }
 };
 
 #endif
