@@ -1,5 +1,4 @@
 #include "../inc/LoggingSystem.hpp"
-#include <algorithm>
 #include <iostream>
 
 std::vector<LogEntry> LoggingSystem::logs;
