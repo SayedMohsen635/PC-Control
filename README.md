@@ -1,7 +1,7 @@
-# 🖥️ PC Control Project – Design Plan
+# 🖥️ PC Control Project
 
 ## 🚀 Overview
-**PC Control** is a modular C++ server application that listens for client commands and performs system actions (such as launching applications).  
+**PC Control** is a modular C++ server application that listens for client commands and performs system actions.
 It demonstrates core C++ design concepts like modular programming, command parsing, socket communication, and logging — suitable as a prototype for showcasing my C++ learning.
 
 
@@ -9,7 +9,6 @@ It demonstrates core C++ design concepts like modular programming, command parsi
 <p align="center">
   <img src="/SystemFlow.png" alt="System-Flow Diagram" style="max-width:100%; height:auto;">
 </p>
-```
 
 
 ## 💬 Communication Protocol
@@ -19,13 +18,16 @@ It demonstrates core C++ design concepts like modular programming, command parsi
 Example:  
 ```
 LAUNCH|Chrome
+LAUNCH|App
+open_chrome
 EXIT
 ```
 
 ### 📤 **Response Format**
 ```
 OK|Application Launched: Chrome
-ERROR|Unknown command
+ERROR|Unknown Command
+ERROR|Invalid Format
 OK|Good Bye
 ```
 
