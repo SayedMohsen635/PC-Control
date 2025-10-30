@@ -3,10 +3,9 @@
 
 #include "Command.hpp"
 
-class CommandParser
-{
+class CommandParser {
 public:
-    static Command parse(const std::string &clientRequest);
+  static Command parse(const std::string &clientRequest);
 };
 
 #endif

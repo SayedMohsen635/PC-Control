@@ -1,5 +1,8 @@
 #include "../inc/LaunchAppAction.hpp"
 #include <algorithm>
+#include <cstddef>
+#include <sys/mman.h>
+#include <sys/wait.h>
 
 ActionResult LaunchAppAction::execute(const Command &cmd) {
   std::string app = cmd.getApp();
@@ -10,6 +13,9 @@ ActionResult LaunchAppAction::execute(const Command &cmd) {
   }
 
   pid_t child = fork();
+  int *shared = (int *)mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE,
+                            MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  *shared = 0;
 
   if (child == 0) {
     if (app == "Chrome") {
@@ -22,11 +28,17 @@ ActionResult LaunchAppAction::execute(const Command &cmd) {
       std::cout << "[Action] Launching App: " + app << std::endl;
       execlp("gnome-calculator", "gnome-calculator", nullptr);
     } else {
-      return ActionResult("Unknown Application\n", false);
+      *shared = 1;
     }
   } else if (child < 0) {
     std::cout << "Failed to fork process" << std::endl;
   }
 
-  return ActionResult("Application Launched: " + app + '\n', true);
+  wait(NULL); // Wait for the child to finish the process
+
+  if (*shared == 1) {
+    return ActionResult("Unknown Application\n", false);
+  } else {
+    return ActionResult("Application Launched: " + app + '\n', true);
+  }
 }

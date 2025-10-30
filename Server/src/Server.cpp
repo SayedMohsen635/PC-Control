@@ -1,5 +1,7 @@
 #include "../inc/Server.hpp"
 #include "../../ActionHandler/inc/ActionHandler.hpp"
+#include "../../Logging/inc/LoggingSystem.hpp"
+#include "../../ResponseGenerator/inc/ResponseGenerator.hpp"
 
 // set port number
 Server::Server(int port) : port(port), serverSocket(-1) {}
@@ -22,13 +24,15 @@ bool Server::setupSocket() {
   int bindResult =
       bind(serverSocket, (sockaddr *)&serverAddress, sizeof(serverAddress));
   if (bindResult < 0) {
-    perror("Bind failed");
+    LoggingSystem::Error("Bind Failed\n");
+    // perror("Bind failed");
     return false;
   }
 
   // listen to the clients
   if (listen(serverSocket, 5) < 0) {
-    perror("Listen Failed");
+    LoggingSystem::Error("Listen Failed\n");
+    // perror("Listen Failed");
     return false;
   }
 
@@ -52,51 +56,52 @@ ActionResult Server::processRequest(const std::string &request) {
   Command result = CommandParser::parse(req);
   ActionHandler handleCmd;
   if (!result.isValid()) {
-    return ActionResult("Invalid Format", false);
+    return ActionResult("Invalid Format\n", false);
   }
 
   return handleCmd.handleCommand(result);
-  // if (result.getCommand() == "LAUNCH") {
-  //   return "OK|Launching " + result.getApp() + "\n";
-  // } else if (result.getCommand() == "EXIT") {
-  //   return "OK|Good Bye";
-  // } else {
-  //   return "ERROR|Unknown Command\n";
-  // }
 }
 
 // listen and handle client requests
 void Server::start() {
-  std::cout << "[Server] Starting on port " << port << "...\n";
+  LoggingSystem::Info("Starting on port ");
+  std::cout << port << "...\n";
 
   if (!setupSocket()) {
-    std::cerr << "[Server] Failed to set up socket" << std::endl;
+    LoggingSystem::Error("Failed to set up socket\n");
+    // std::cerr << "[Server] Failed to set up socket" << std::endl;
     return;
   }
 
-  std::cout << "[Server] Listening for client connections...\n";
+  LoggingSystem::Info("Listening for client connections...\n");
+  // std::cout << "[Server] Listening for client connections...\n";
 
   while (true) {
     // accept the request
     int clientSocket = accept(serverSocket, nullptr, nullptr);
     if (clientSocket < 0) {
-      perror("Accept Failed");
+      LoggingSystem::Error("Accept Failed\n");
+      // perror("Accept Failed");
       continue;
     }
 
-    std::cout << "[Server] Client Connected." << std::endl;
+    LoggingSystem::Info("Client Connected\n");
+    // std::cout << "[Server] Client Connected." << std::endl;
 
     while (true) {
       ActionResult msg = Server::handleClient(clientSocket);
-      if (msg.getMessage().empty()) {
-        std::cout << "[Server] Client Disconnected";
+      if (ResponseGenerator::generate(msg).empty()) {
+        LoggingSystem::Info("Client Disconnected\n");
+        // std::cout << "[Server] Client Disconnected";
         break;
       }
 
-      send(clientSocket, msg.getMessage().c_str(), msg.getMessage().size(), 0);
+      send(clientSocket, ResponseGenerator::generate(msg).c_str(),
+           ResponseGenerator::generate(msg).size(), 0);
 
       if (msg.getMessage() == "Good Bye") {
-        std::cout << "[Server] Closing connection for client." << std::endl;
+        LoggingSystem::Info("Closing connection for client.\n");
+        // std::cout << "[Server] Closing connection for client." << std::endl;
         break;
       }
     }
