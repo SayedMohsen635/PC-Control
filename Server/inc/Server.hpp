@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include "../../ActionHandler/inc/ActionResult.hpp"
 #include "../../Command/inc/CommandParser.hpp"
 #include <algorithm>
 #include <cstring>
@@ -29,10 +30,10 @@ private:
   bool setupSocket();
 
   // wait for a client and process a single request
-  std::string handleClient(int clientSocket);
+  ActionResult handleClient(int clientSocket);
 
   // used in handleClient function to process the raw data from the client
-  std::string processRequest(const std::string &request);
+  ActionResult processRequest(const std::string &request);
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "../inc/Server.hpp"
+#include "../../ActionHandler/inc/ActionHandler.hpp"
 
 // set port number
 Server::Server(int port) : port(port), serverSocket(-1) {}
@@ -35,7 +36,7 @@ bool Server::setupSocket() {
 }
 
 // wait for a client and process a single request
-std::string Server::handleClient(int clientSocket) {
+ActionResult Server::handleClient(int clientSocket) {
   // receiving data from client
   char buffer[1024] = {0};
   recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -43,23 +44,25 @@ std::string Server::handleClient(int clientSocket) {
 }
 
 // used in handleClient function to process the raw data from the client
-std::string Server::processRequest(const std::string &request) {
+ActionResult Server::processRequest(const std::string &request) {
   std::string req = request;
   req.erase(std::remove(req.begin(), req.end(), '\n'),
             req.end()); // Trimming new lines in the end of request
 
   Command result = CommandParser::parse(req);
+  ActionHandler handleCmd;
   if (!result.isValid()) {
-    return "ERROR|Invalid Format\n";
+    return ActionResult("Invalid Format", false);
   }
 
-  if (result.getCommand() == "LAUNCH") {
-    return "OK|Launching " + result.getApp() + "\n";
-  } else if (result.getCommand() == "EXIT") {
-    return "OK|Good Bye";
-  } else {
-    return "ERROR|Unknown Command\n";
-  }
+  return handleCmd.handleCommand(result);
+  // if (result.getCommand() == "LAUNCH") {
+  //   return "OK|Launching " + result.getApp() + "\n";
+  // } else if (result.getCommand() == "EXIT") {
+  //   return "OK|Good Bye";
+  // } else {
+  //   return "ERROR|Unknown Command\n";
+  // }
 }
 
 // listen and handle client requests
@@ -84,15 +87,15 @@ void Server::start() {
     std::cout << "[Server] Client Connected." << std::endl;
 
     while (true) {
-      std::string msg = Server::handleClient(clientSocket);
-      if (msg.empty()) {
+      ActionResult msg = Server::handleClient(clientSocket);
+      if (msg.getMessage().empty()) {
         std::cout << "[Server] Client Disconnected";
         break;
       }
 
-      send(clientSocket, msg.c_str(), msg.size(), 0);
+      send(clientSocket, msg.getMessage().c_str(), msg.getMessage().size(), 0);
 
-      if (msg == "OK|Good Bye") {
+      if (msg.getMessage() == "Good Bye") {
         std::cout << "[Server] Closing connection for client." << std::endl;
         break;
       }
